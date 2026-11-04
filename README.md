@@ -33,3 +33,4 @@ Aplikasi web penilaian kepuasan pengguna layanan dan pemilihan petugas pelayanan
 
 ### 2. Menggunakan Static Hosting (GitHub Pages / Netlify / Vercel) + Google Sheets
 - File `index.html` dapat langsung di-host di **GitHub Pages** dan tetap berjalan menggunakan *fallback* penyimpanan lokal + sinkronisasi **Google Apps Script (`google-apps-script.js`)** ke Google Sheets.
+

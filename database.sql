@@ -1,12 +1,7 @@
 -- ============================================================================
 -- DATABASE MYSQL: PENILAIAN & PEMILIHAN PETUGAS TERBAIK BKK TARAKAN 2026
+-- Dapat langsung di-import ke phpMyAdmin (Hostinger / cPanel / XAMPP)
 -- ============================================================================
-
-CREATE DATABASE IF NOT EXISTS bkk_tarakan_2026
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE bkk_tarakan_2026;
 
 -- 1. Tabel Admin / Panitia
 CREATE TABLE IF NOT EXISTS admin_users (
@@ -68,5 +63,3 @@ CREATE TABLE IF NOT EXISTS responses (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Migrasi otomatis jika tabel responses sudah dibuat sebelumnya tanpa kolom respondent_contact
-ALTER TABLE responses ADD COLUMN IF NOT EXISTS respondent_contact VARCHAR(50) DEFAULT '' AFTER respondent_name;

@@ -136,9 +136,13 @@ function runSQL(sqlQuery, useDb = true) {
 // Inisialisasi schema database.sql
 async function initDatabase() {
   await ensureMySQLRunning();
+  await runSQL(
+    `CREATE DATABASE IF NOT EXISTS \`${DB_CONFIG.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`,
+    false
+  );
   const schemaPath = path.join(__dirname, 'database.sql');
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-  await runSQL(schemaSql, false);
+  await runSQL(schemaSql, true);
   console.log(`[MySQL] Database "${DB_CONFIG.database}" & tabel siap digunakan.`);
 }
 

@@ -1038,12 +1038,60 @@
       checkUrlWilkerParam();
     });
 
+    // Helper API Otomatis: Mendukung Hosting PHP (Hostinger/cPanel api.php) & Server Node.js (/api/...)
+    async function callApi(endpoint, options = {}) {
+      const method = (options.method || 'GET').toUpperCase();
+      const bodyObj = options.body ? { ...options.body } : undefined;
+
+      // Untuk kompatibilitas firewall Shared Hosting (Hostinger/cPanel), DELETE dikirim via POST + _method
+      const phpMethod = method === 'DELETE' ? 'POST' : method;
+      const phpBodyObj = method === 'DELETE' ? { ...(bodyObj || {}), _method: 'DELETE' } : bodyObj;
+
+      const candidateUrls = [
+        {
+          url: `api.php?endpoint=${encodeURIComponent(endpoint)}`,
+          fetchOpts: {
+            method: phpMethod,
+            headers: { 'Content-Type': 'application/json' },
+            body: phpBodyObj ? JSON.stringify(phpBodyObj) : undefined
+          }
+        },
+        {
+          url: `/api/${endpoint}`,
+          fetchOpts: {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: bodyObj ? JSON.stringify(bodyObj) : undefined
+          }
+        }
+      ];
+
+      let lastErr = new Error('Backend API tidak tersedia');
+      for (const candidate of candidateUrls) {
+        try {
+          const res = await fetch(candidate.url, candidate.fetchOpts);
+          const contentType = (res.headers.get('content-type') || '').toLowerCase();
+          if (!contentType.includes('application/json')) {
+            continue;
+          }
+          const data = await res.json();
+          if (res.status >= 500) {
+            lastErr = new Error(data.message || 'Server error');
+            continue;
+          }
+          return { ok: res.ok, status: res.status, data };
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      throw lastErr;
+    }
+
     async function syncFromMySQL() {
       const badge = document.getElementById('dbStatusBadge');
       try {
-        const res = await fetch('/api/data');
-        if (!res.ok) throw new Error('Gagal memuat data dari MySQL');
-        const data = await res.json();
+        const { ok, data } = await callApi('data');
+        if (!ok) throw new Error('Gagal memuat data dari MySQL');
         if (Array.isArray(data.employees)) {
           dbEmployeesCache = data.employees;
           localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(data.employees));
@@ -1165,12 +1213,11 @@
 
       let authenticated = false;
       try {
-        const res = await fetch('/api/login', {
+        const { ok } = await callApi('login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: inputUser, password: inputPass })
+          body: { username: inputUser, password: inputPass }
         });
-        if (res.ok) {
+        if (ok) {
           authenticated = true;
         }
       } catch (err) {
@@ -1224,17 +1271,15 @@
       const alertBox = document.getElementById('changePassAlert');
 
       try {
-        const res = await fetch('/api/change-password', {
+        const { ok, data } = await callApi('change-password', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             currentPassword: currentPass,
             newUsername,
             newPassword: newPass
-          })
+          }
         });
-        const data = await res.json();
-        if (!res.ok) {
+        if (!ok) {
           alertBox.className = 'mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-medium text-red-700';
           alertBox.textContent = data.message || 'Password saat ini tidak sesuai.';
           alertBox.classList.remove('hidden');
@@ -1604,18 +1649,15 @@
       };
 
       try {
-        const res = await fetch('/api/responses', {
+        const { ok, status, data } = await callApi('responses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newResponse)
+          body: newResponse
         });
-        if (res.status === 409) {
-          const dupData = await res.json();
-          alert(dupData.message || 'Anda sudah memberikan penilaian untuk pegawai ini pada hari ini.');
+        if (status === 409) {
+          alert(data.message || 'Anda sudah memberikan penilaian untuk pegawai ini pada hari ini.');
           return;
         }
-        if (res.ok) {
-          const data = await res.json();
+        if (ok) {
           if (Array.isArray(data.responses)) {
             dbResponsesCache = data.responses;
             localStorage.setItem(STORAGE_KEYS.RESPONSES, JSON.stringify(data.responses));
@@ -1736,16 +1778,12 @@
       saveEmployeesToStorage(employees);
 
       try {
-        const res = await fetch('/api/employees', {
+        const { ok, data } = await callApi('employees', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadEmp)
+          body: payloadEmp
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.employees)) {
-            saveEmployeesToStorage(data.employees);
-          }
+        if (ok && Array.isArray(data.employees)) {
+          saveEmployeesToStorage(data.employees);
         }
       } catch (err) {
         console.warn('Pegawai disimpan di cache lokal:', err);
@@ -1788,14 +1826,11 @@
       saveEmployeesToStorage(updated);
 
       try {
-        const res = await fetch(`/api/employees/${encodeURIComponent(empId)}`, {
+        const { ok, data } = await callApi(`employees/${encodeURIComponent(empId)}`, {
           method: 'DELETE'
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.employees)) {
-            saveEmployeesToStorage(data.employees);
-          }
+        if (ok && Array.isArray(data.employees)) {
+          saveEmployeesToStorage(data.employees);
         }
       } catch (err) {
         console.warn('Gagal hapus di MySQL:', err);
@@ -1957,16 +1992,12 @@
       }
 
       try {
-        const res = await fetch('/api/employees/bulk', {
+        const { ok, data } = await callApi('employees/bulk', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ employees: imported })
+          body: { employees: imported }
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.employees)) {
-            saveEmployeesToStorage(data.employees);
-          }
+        if (ok && Array.isArray(data.employees)) {
+          saveEmployeesToStorage(data.employees);
         } else {
           const merged = [...getEmployees(), ...imported];
           saveEmployeesToStorage(merged);
@@ -2216,7 +2247,7 @@
         dbResponsesCache = [];
         localStorage.removeItem(STORAGE_KEYS.RESPONSES);
         try {
-          await fetch('/api/responses', { method: 'DELETE' });
+          await callApi('responses', { method: 'DELETE' });
         } catch (err) {
           console.warn('Gagal reset responses di MySQL:', err);
         }

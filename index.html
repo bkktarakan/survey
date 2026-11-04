@@ -634,19 +634,26 @@
             </select>
           </div>
 
-          <!-- Upload Foto Pegawai -->
+          <!-- Upload Foto Pegawai + Fitur Atur Crop -->
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
-              Foto Pegawai <span class="text-xs font-normal text-slate-400">(Format JPG/PNG)</span>
+              Foto Pegawai <span class="text-xs font-normal text-slate-400">(Format JPG/PNG — Bisa Diatur Crop)</span>
             </label>
             <div class="flex items-center gap-3.5">
-              <img id="empPhotoPreview" src="" alt="Preview"
-                class="w-16 h-16 rounded-xl object-cover border border-slate-300 bg-slate-100 shrink-0" />
-              <div class="flex-1">
+              <div class="relative group shrink-0">
+                <img id="empPhotoPreview" src="" alt="Preview"
+                  class="w-16 h-16 rounded-xl object-cover border border-slate-300 bg-slate-100" />
+              </div>
+              <div class="flex-1 space-y-1.5">
                 <input type="file" id="empPhotoFile" accept="image/*" onchange="handlePhotoUpload(event)"
                   class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" />
-                <p class="text-[11px] text-slate-400 mt-1">Foto otomatis disesuaikan ukurannya agar ringan & cepat
-                  dimuat.</p>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btnReCropPhoto" onclick="reopenPhotoCropModal()"
+                    class="hidden px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[11px] font-semibold cursor-pointer">
+                    ✂️ Atur Posisi / Crop Foto
+                  </button>
+                  <p class="text-[11px] text-slate-400">Pilih foto untuk mengatur posisi wajah &amp; zoom (crop persegi).</p>
+                </div>
               </div>
             </div>
           </div>
@@ -853,6 +860,81 @@
             🖨️ Cetak Poster QR Code Loket
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL ATUR & CROP FOTO PEGAWAI ==================== -->
+  <div id="photoCropModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-800">✂️ Atur Posisi &amp; Crop Foto Pegawai</h3>
+          <p class="text-xs text-slate-500">Geser foto dengan mouse/jari dan atur perbesaran (zoom)</p>
+        </div>
+        <button type="button" onclick="closePhotoCropModal()"
+          class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center font-bold cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Area Kanvas Crop Persegi -->
+      <div class="flex flex-col items-center">
+        <div class="relative w-[260px] h-[260px] sm:w-[280px] sm:h-[280px] rounded-2xl overflow-hidden border-2 border-teal-600 bg-slate-900 shadow-inner select-none">
+          <canvas id="photoCropCanvas" width="280" height="280"
+            class="w-full h-full cursor-move touch-none block"></canvas>
+          <!-- Garis Bantu Grid 3x3 -->
+          <div class="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
+            <div class="border-r border-b border-white/30"></div>
+            <div class="border-r border-b border-white/30"></div>
+            <div class="border-b border-white/30"></div>
+            <div class="border-r border-b border-white/30"></div>
+            <div class="border-r border-b border-white/30"></div>
+            <div class="border-b border-white/30"></div>
+            <div class="border-r border-white/30"></div>
+            <div class="border-r border-white/30"></div>
+            <div></div>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2">💡 Klik &amp; tahan pada foto untuk menggeser posisi wajah ke tengah kotak</p>
+      </div>
+
+      <!-- Kontrol Zoom & Putar -->
+      <div class="mt-4 space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+        <div class="flex items-center gap-2.5">
+          <button type="button" onclick="adjustCropZoom(-0.15)"
+            class="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer"
+            title="Perkecil">−</button>
+          <input type="range" id="cropZoomSlider" min="1" max="3.5" step="0.02" value="1"
+            oninput="handleCropZoomSlider(this.value)"
+            class="flex-1 accent-teal-600 cursor-pointer" />
+          <button type="button" onclick="adjustCropZoom(0.15)"
+            class="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer"
+            title="Perbesar">+</button>
+          <span id="cropZoomLabel" class="text-xs font-mono font-semibold text-slate-600 w-12 text-right">100%</span>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/80">
+          <button type="button" onclick="rotateCropPhoto()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer">
+            🔄 Putar 90°
+          </button>
+          <button type="button" onclick="resetCropPosition()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 text-xs font-semibold cursor-pointer">
+            ↺ Reset Posisi
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 mt-4">
+        <button type="button" onclick="closePhotoCropModal()"
+          class="w-1/3 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs cursor-pointer">
+          Batal
+        </button>
+        <button type="button" onclick="applyPhotoCrop()"
+          class="w-2/3 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs shadow-sm cursor-pointer">
+          ✓ Terapkan Crop Foto
+        </button>
       </div>
     </div>
   </div>
@@ -1709,42 +1791,214 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ==================== MANAJEMEN INPUT PEGAWAI (NAMA, NIP, JABATAN, WILKER, FOTO) ====================
+    // ==================== MANAJEMEN INPUT PEGAWAI & CROP FOTO INTERAKTIF ====================
+    let rawPhotoSourceDataUrl = '';
+    let cropImageObj = null;
+    let cropState = {
+      zoom: 1,
+      baseScale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      rotation: 0,
+      isDragging: false,
+      startX: 0,
+      startY: 0
+    };
+    let cropCanvasListenersInitialized = false;
+
+    function initCropCanvasListeners() {
+      if (cropCanvasListenersInitialized) return;
+      const canvas = document.getElementById('photoCropCanvas');
+      if (!canvas) return;
+      cropCanvasListenersInitialized = true;
+
+      const getPointerPos = e => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      };
+
+      const startDrag = e => {
+        if (!cropImageObj) return;
+        e.preventDefault();
+        const pos = getPointerPos(e);
+        cropState.isDragging = true;
+        cropState.startX = pos.x - cropState.offsetX;
+        cropState.startY = pos.y - cropState.offsetY;
+      };
+
+      const moveDrag = e => {
+        if (!cropState.isDragging || !cropImageObj) return;
+        e.preventDefault();
+        const pos = getPointerPos(e);
+        cropState.offsetX = pos.x - cropState.startX;
+        cropState.offsetY = pos.y - cropState.startY;
+        clampCropOffsets();
+        drawCropCanvas();
+      };
+
+      const endDrag = () => {
+        cropState.isDragging = false;
+      };
+
+      canvas.addEventListener('mousedown', startDrag);
+      window.addEventListener('mousemove', moveDrag);
+      window.addEventListener('mouseup', endDrag);
+
+      canvas.addEventListener('touchstart', startDrag, { passive: false });
+      window.addEventListener('touchmove', moveDrag, { passive: false });
+      window.addEventListener('touchend', endDrag);
+
+      canvas.addEventListener('wheel', e => {
+        if (!cropImageObj) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.1 : -0.1;
+        adjustCropZoom(delta);
+      }, { passive: false });
+    }
+
+    function getRotatedDimensions() {
+      if (!cropImageObj) return { w: 280, h: 280 };
+      const isRotated90 = (cropState.rotation % 180) !== 0;
+      return {
+        w: isRotated90 ? cropImageObj.height : cropImageObj.width,
+        h: isRotated90 ? cropImageObj.width : cropImageObj.height
+      };
+    }
+
+    function clampCropOffsets() {
+      const canvas = document.getElementById('photoCropCanvas');
+      if (!canvas || !cropImageObj) return;
+      const cw = canvas.width;
+      const ch = canvas.height;
+      const { w, h } = getRotatedDimensions();
+      const totalScale = cropState.baseScale * cropState.zoom;
+      const drawW = w * totalScale;
+      const drawH = h * totalScale;
+
+      const maxOffsetX = Math.max(0, (drawW - cw) / 2);
+      const maxOffsetY = Math.max(0, (drawH - ch) / 2);
+
+      cropState.offsetX = Math.min(maxOffsetX, Math.max(-maxOffsetX, cropState.offsetX));
+      cropState.offsetY = Math.min(maxOffsetY, Math.max(-maxOffsetY, cropState.offsetY));
+    }
+
+    function resetCropPosition() {
+      if (!cropImageObj) return;
+      const canvas = document.getElementById('photoCropCanvas');
+      const cw = canvas ? canvas.width : 280;
+      const ch = canvas ? canvas.height : 280;
+      const { w, h } = getRotatedDimensions();
+
+      // Cover scale agar kotak persegi selalu terisi penuh
+      cropState.baseScale = Math.max(cw / w, ch / h);
+      cropState.zoom = 1;
+      cropState.offsetX = 0;
+      cropState.offsetY = 0;
+
+      const slider = document.getElementById('cropZoomSlider');
+      const label = document.getElementById('cropZoomLabel');
+      if (slider) slider.value = '1';
+      if (label) label.textContent = '100%';
+      drawCropCanvas();
+    }
+
+    function handleCropZoomSlider(val) {
+      cropState.zoom = Math.min(3.5, Math.max(1, Number(val) || 1));
+      const label = document.getElementById('cropZoomLabel');
+      if (label) label.textContent = `${Math.round(cropState.zoom * 100)}%`;
+      clampCropOffsets();
+      drawCropCanvas();
+    }
+
+    function adjustCropZoom(delta) {
+      const nextZoom = Math.min(3.5, Math.max(1, Number((cropState.zoom + delta).toFixed(2))));
+      const slider = document.getElementById('cropZoomSlider');
+      if (slider) slider.value = String(nextZoom);
+      handleCropZoomSlider(nextZoom);
+    }
+
+    function rotateCropPhoto() {
+      cropState.rotation = (cropState.rotation + 90) % 360;
+      resetCropPosition();
+    }
+
+    function drawCropCanvas() {
+      const canvas = document.getElementById('photoCropCanvas');
+      if (!canvas || !cropImageObj) return;
+      const ctx = canvas.getContext('2d');
+      const cw = canvas.width;
+      const ch = canvas.height;
+
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, cw, ch);
+
+      const totalScale = cropState.baseScale * cropState.zoom;
+
+      ctx.save();
+      ctx.translate(cw / 2 + cropState.offsetX, ch / 2 + cropState.offsetY);
+      ctx.rotate((cropState.rotation * Math.PI) / 180);
+      ctx.scale(totalScale, totalScale);
+      ctx.drawImage(
+        cropImageObj,
+        -cropImageObj.width / 2,
+        -cropImageObj.height / 2,
+        cropImageObj.width,
+        cropImageObj.height
+      );
+      ctx.restore();
+    }
+
+    function openPhotoCropModalWithSrc(dataUrl) {
+      initCropCanvasListeners();
+      const img = new Image();
+      img.onload = function () {
+        cropImageObj = img;
+        cropState.rotation = 0;
+        document.getElementById('photoCropModal').classList.remove('hidden');
+        resetCropPosition();
+      };
+      img.src = dataUrl;
+    }
+
+    function reopenPhotoCropModal() {
+      const src = rawPhotoSourceDataUrl || currentUploadedPhotoBase64;
+      if (!src) return;
+      openPhotoCropModalWithSrc(src);
+    }
+
+    function closePhotoCropModal() {
+      document.getElementById('photoCropModal').classList.add('hidden');
+    }
+
+    function applyPhotoCrop() {
+      const canvas = document.getElementById('photoCropCanvas');
+      if (!canvas || !cropImageObj) return;
+
+      // Render hasil crop dengan resolusi bersih 280x280 px
+      drawCropCanvas();
+      currentUploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.86);
+      document.getElementById('empPhotoPreview').src = currentUploadedPhotoBase64;
+      const btnReCrop = document.getElementById('btnReCropPhoto');
+      if (btnReCrop) btnReCrop.classList.remove('hidden');
+      closePhotoCropModal();
+    }
+
     function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          // Kompresi otomatis ke ukuran 240x240 px agar hemat memori browser
-          const canvas = document.createElement('canvas');
-          const MAX_SIZE = 240;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height = Math.round((height * MAX_SIZE) / width);
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width = Math.round((width * MAX_SIZE) / height);
-              height = MAX_SIZE;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          currentUploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.82);
-          document.getElementById('empPhotoPreview').src = currentUploadedPhotoBase64;
-        };
-        img.src = e.target.result;
+        rawPhotoSourceDataUrl = e.target.result;
+        openPhotoCropModalWithSrc(rawPhotoSourceDataUrl);
       };
       reader.readAsDataURL(file);
     }
@@ -1828,7 +2082,13 @@
       document.getElementById('empJabatanInput').value = emp.jabatan;
       document.getElementById('empWilkerInput').value = emp.wilker;
       currentUploadedPhotoBase64 = emp.photo || '';
+      rawPhotoSourceDataUrl = emp.photo || '';
       document.getElementById('empPhotoPreview').src = emp.photo || createAvatarSvg(emp.name);
+      const btnReCrop = document.getElementById('btnReCropPhoto');
+      if (btnReCrop) {
+        if (emp.photo) btnReCrop.classList.remove('hidden');
+        else btnReCrop.classList.add('hidden');
+      }
 
       document.getElementById('employeeFormTitle').textContent = 'Edit Data Pegawai';
       document.getElementById('btnSubmitEmployee').textContent = 'Simpan Perubahan Pegawai';
@@ -1864,7 +2124,10 @@
       document.getElementById('employeeForm').reset();
       document.getElementById('empIdInput').value = '';
       currentUploadedPhotoBase64 = '';
+      rawPhotoSourceDataUrl = '';
       document.getElementById('empPhotoPreview').src = createAvatarSvg('BKK');
+      const btnReCrop = document.getElementById('btnReCropPhoto');
+      if (btnReCrop) btnReCrop.classList.add('hidden');
       document.getElementById('employeeFormTitle').textContent = 'Form Input Data Pegawai';
       document.getElementById('btnSubmitEmployee').textContent = '+ Simpan Data Pegawai';
       document.getElementById('btnCancelEdit').classList.add('hidden');

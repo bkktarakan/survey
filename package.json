@@ -1,0 +1,13 @@
+{
+  "name": "pemilihan-petugas-bkk-tarakan",
+  "version": "1.0.0",
+  "description": "Aplikasi Penilaian Kepuasan & Pemilihan Petugas Pelayanan Terbaik BKK Tarakan 2026 dengan Database MySQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  }
+}
+

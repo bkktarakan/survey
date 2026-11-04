@@ -223,8 +223,17 @@
             </label>
             <p class="text-xs text-slate-500 mb-2">Nama & foto pegawai akan muncul sesuai wilayah kerja yang dipilih</p>
             <select id="filterWilkerB" required onchange="handleWilkerChangeB(this.value)"
-              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm font-medium text-slate-800">
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm font-medium text-slate-800 cursor-pointer">
               <option value="">-- Pilih Wilayah Kerja --</option>
+              <option value="Kantor Induk BKK Tarakan">Kantor Induk BKK Tarakan</option>
+              <option value="Wilker Pelabuhan Malundung">Wilker Pelabuhan Malundung</option>
+              <option value="Wilker Bandara Juwata">Wilker Bandara Juwata</option>
+              <option value="Wilker Pelabuhan Tengkayu I (SDF)">Wilker Pelabuhan Tengkayu I (SDF)</option>
+              <option value="Wilker Nunukan">Wilker Nunukan</option>
+              <option value="Wilker Sebatik">Wilker Sebatik</option>
+              <option value="Wilker Tanjung Selor">Wilker Tanjung Selor</option>
+              <option value="Wilker Malinau">Wilker Malinau</option>
+              <option value="Wilker Bunyu">Wilker Bunyu</option>
             </select>
           </div>
 
@@ -605,27 +614,24 @@
               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:border-teal-600 outline-none text-sm" />
           </div>
 
-          <!-- Wilayah Kerja -->
+          <!-- Wilayah Kerja (Dropdown Pilihan Langsung) -->
           <div>
             <label for="empWilkerInput" class="block text-xs font-semibold text-slate-700 mb-1">
               Wilayah Kerja (Wilker) <span class="text-red-500">*</span>
             </label>
-            <input type="text" id="empWilkerInput" list="wilkerOptionsList" required
-              placeholder="Pilih atau ketik nama Wilayah Kerja..."
-              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:border-teal-600 outline-none text-sm" />
-            <datalist id="wilkerOptionsList">
-              <option value="Kantor Induk BKK Tarakan"></option>
-              <option value="Wilker Pelabuhan Malundung"></option>
-              <option value="Wilker Bandara Juwata"></option>
-              <option value="Wilker Pelabuhan Tengkayu I (SDF)"></option>
-              <option value="Wilker Nunukan"></option>
-              <option value="Wilker Sebatik"></option>
-              <option value="Wilker Tanjung Selor"></option>
-              <option value="Wilker Malinau"></option>
-              <option value="Wilker Bunyu"></option>
-            </datalist>
-            <p class="text-[11px] text-slate-400 mt-1">Pilih dari daftar atau ketik langsung nama Wilayah Kerja baru.
-            </p>
+            <select id="empWilkerInput" required
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm font-medium text-slate-800 cursor-pointer">
+              <option value="">-- Pilih Wilayah Kerja --</option>
+              <option value="Kantor Induk BKK Tarakan">Kantor Induk BKK Tarakan</option>
+              <option value="Wilker Pelabuhan Malundung">Wilker Pelabuhan Malundung</option>
+              <option value="Wilker Bandara Juwata">Wilker Bandara Juwata</option>
+              <option value="Wilker Pelabuhan Tengkayu I (SDF)">Wilker Pelabuhan Tengkayu I (SDF)</option>
+              <option value="Wilker Nunukan">Wilker Nunukan</option>
+              <option value="Wilker Sebatik">Wilker Sebatik</option>
+              <option value="Wilker Tanjung Selor">Wilker Tanjung Selor</option>
+              <option value="Wilker Malinau">Wilker Malinau</option>
+              <option value="Wilker Bunyu">Wilker Bunyu</option>
+            </select>
           </div>
 
           <!-- Upload Foto Pegawai -->
@@ -1334,32 +1340,49 @@
       return [];
     }
 
+    const STANDARD_WILKERS = [
+      'Kantor Induk BKK Tarakan',
+      'Wilker Pelabuhan Malundung',
+      'Wilker Bandara Juwata',
+      'Wilker Pelabuhan Tengkayu I (SDF)',
+      'Wilker Nunukan',
+      'Wilker Sebatik',
+      'Wilker Tanjung Selor',
+      'Wilker Malinau',
+      'Wilker Bunyu'
+    ];
+
     function getUniqueWilkers() {
       const employees = getEmployees();
-      const set = new Set();
+      const set = new Set(STANDARD_WILKERS);
       employees.forEach(emp => {
         if (emp.wilker && emp.wilker.trim()) {
           set.add(emp.wilker.trim());
         }
       });
-      return Array.from(set).sort((a, b) => a.localeCompare(b, 'id'));
+      return Array.from(set);
     }
 
     // ==================== FILTER WILAYAH KERJA -> KARTU FOTO & NAMA PEGAWAI (BAGIAN B) ====================
     function populateWilkerDropdowns() {
       const wilkers = getUniqueWilkers();
       const selectWilkerB = document.getElementById('filterWilkerB');
+      const empWilkerSelect = document.getElementById('empWilkerInput');
       const adminFilter = document.getElementById('adminFilterWilker');
       const lbFilter = document.getElementById('leaderboardFilterWilker');
       const qrFilter = document.getElementById('qrSelectWilker');
 
-      const prevB = selectWilkerB.value;
-      const prevAdmin = adminFilter.value;
+      const prevB = selectWilkerB ? selectWilkerB.value : '';
+      const prevEmpWilker = empWilkerSelect ? empWilkerSelect.value : '';
+      const prevAdmin = adminFilter ? adminFilter.value : 'ALL';
       const prevLb = lbFilter ? lbFilter.value : 'ALL';
 
       const optionsHtml = wilkers.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join('');
 
       selectWilkerB.innerHTML = `<option value="">-- Pilih Wilayah Kerja --</option>` + optionsHtml;
+      if (empWilkerSelect) {
+        empWilkerSelect.innerHTML = `<option value="">-- Pilih Wilayah Kerja --</option>` + optionsHtml;
+      }
       adminFilter.innerHTML = `<option value="ALL">Semua Wilayah Kerja (${wilkers.length})</option>` + optionsHtml;
       if (lbFilter) {
         lbFilter.innerHTML = `<option value="ALL">Semua Wilayah Kerja</option>` + optionsHtml;
@@ -1371,6 +1394,9 @@
       if (wilkers.includes(prevB)) {
         selectWilkerB.value = prevB;
         handleWilkerChangeB(prevB, true);
+      }
+      if (empWilkerSelect && wilkers.includes(prevEmpWilker)) {
+        empWilkerSelect.value = prevEmpWilker;
       }
       if (prevAdmin === 'ALL' || wilkers.includes(prevAdmin)) {
         adminFilter.value = prevAdmin;

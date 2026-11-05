@@ -225,15 +225,13 @@
             <select id="filterWilkerB" required onchange="handleWilkerChangeB(this.value)"
               class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm font-medium text-slate-800 cursor-pointer">
               <option value="">-- Pilih Wilayah Kerja --</option>
-              <option value="Kantor Induk">Kantor Induk</option>
+              <option value="Layanan Pelabuhan Malundung Tarakan">Layanan Pelabuhan Malundung Tarakan</option>
               <option value="Wilker Tanjung Selor">Wilker Tanjung Selor</option>
               <option value="Wilker Berau">Wilker Berau</option>
               <option value="Wilker Bunyu">Wilker Bunyu</option>
               <option value="Wilker Nunukan">Wilker Nunukan</option>
               <option value="Wilker Sebatik">Wilker Sebatik</option>
               <option value="Pos Malinau">Pos Malinau</option>
-              <option value="Layanan Pelabuhan Malundung Tarakan">Layanan Pelabuhan Malundung Tarakan</option>
-              <option value="Layanan Bandara Juwata Tarakan">Layanan Bandara Juwata Tarakan</option>
             </select>
           </div>
 
@@ -622,15 +620,13 @@
             <select id="empWilkerInput" required
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm font-medium text-slate-800 cursor-pointer">
               <option value="">-- Pilih Wilayah Kerja --</option>
-              <option value="Kantor Induk">Kantor Induk</option>
+              <option value="Layanan Pelabuhan Malundung Tarakan">Layanan Pelabuhan Malundung Tarakan</option>
               <option value="Wilker Tanjung Selor">Wilker Tanjung Selor</option>
               <option value="Wilker Berau">Wilker Berau</option>
               <option value="Wilker Bunyu">Wilker Bunyu</option>
               <option value="Wilker Nunukan">Wilker Nunukan</option>
               <option value="Wilker Sebatik">Wilker Sebatik</option>
               <option value="Pos Malinau">Pos Malinau</option>
-              <option value="Layanan Pelabuhan Malundung Tarakan">Layanan Pelabuhan Malundung Tarakan</option>
-              <option value="Layanan Bandara Juwata Tarakan">Layanan Bandara Juwata Tarakan</option>
             </select>
           </div>
 
@@ -1064,7 +1060,7 @@
         name: 'Petugas Contoh 1 (Silakan Edit di Panel Panitia)',
         nip: '199001012015031001',
         jabatan: 'Petugas Pelayanan Dokumen Kekarantinaan',
-        wilker: 'Kantor Induk',
+        wilker: 'Layanan Pelabuhan Malundung Tarakan',
         photo: ''
       },
       {
@@ -1072,7 +1068,7 @@
         name: 'Petugas Contoh 2',
         nip: '199204152018012002',
         jabatan: 'Epidemiolog Kesehatan / Petugas SSCE & PHQC',
-        wilker: 'Layanan Pelabuhan Malundung Tarakan',
+        wilker: 'Wilker Tanjung Selor',
         photo: ''
       },
       {
@@ -1080,7 +1076,7 @@
         name: 'Petugas Contoh 3',
         nip: '198908202014021003',
         jabatan: 'Petugas Pelayanan Vaksinasi & Buku ICV',
-        wilker: 'Layanan Bandara Juwata Tarakan',
+        wilker: 'Wilker Berau',
         photo: ''
       },
       {
@@ -1423,15 +1419,13 @@
     }
 
     const STANDARD_WILKERS = [
-      'Kantor Induk',
+      'Layanan Pelabuhan Malundung Tarakan',
       'Wilker Tanjung Selor',
       'Wilker Berau',
       'Wilker Bunyu',
       'Wilker Nunukan',
       'Wilker Sebatik',
-      'Pos Malinau',
-      'Layanan Pelabuhan Malundung Tarakan',
-      'Layanan Bandara Juwata Tarakan'
+      'Pos Malinau'
     ];
 
     function getUniqueWilkers() {
@@ -2194,9 +2188,9 @@
     function downloadEmployeeCSVTemplate() {
       const headers = ['Nama Lengkap Pegawai', 'NIP', 'Jabatan', 'Wilayah Kerja'];
       const examples = [
-        ['dr. Ahmad Fauzi, M.Kes', '198805122015031002', 'Epidemiolog Kesehatan Ahli Muda', 'Kantor Induk'],
-        ['Siti Rahmawati, SKM', '199204152018012002', 'Petugas Pelayanan Dokumen SSCEC & PHQC', 'Layanan Pelabuhan Malundung Tarakan'],
-        ['Budi Santoso, A.Md.KL', '199011202016031004', 'Sanitarian / Pemeriksa Kapal', 'Layanan Bandara Juwata Tarakan']
+        ['dr. Ahmad Fauzi, M.Kes', '198805122015031002', 'Epidemiolog Kesehatan Ahli Muda', 'Layanan Pelabuhan Malundung Tarakan'],
+        ['Siti Rahmawati, SKM', '199204152018012002', 'Petugas Pelayanan Dokumen SSCEC & PHQC', 'Wilker Tanjung Selor'],
+        ['Budi Santoso, A.Md.KL', '199011202016031004', 'Sanitarian / Pemeriksa Kapal', 'Wilker Berau']
       ];
       const csvContent = [headers, ...examples]
         .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
@@ -2254,7 +2248,7 @@
         const name = (cols[0] || '').trim();
         const nip = (cols[1] || '-').trim();
         const jabatan = (cols[2] || 'Petugas Pelayanan').trim();
-        const wilker = (cols[3] || 'Kantor Induk').trim();
+        const wilker = (cols[3] || 'Layanan Pelabuhan Malundung Tarakan').trim();
         if (name && wilker) {
           imported.push({
             id: `emp-${Date.now()}-${i}`,

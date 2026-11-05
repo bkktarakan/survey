@@ -101,18 +101,17 @@ function initTables(PDO $pdo) {
     if ($countEmp === 0) {
         $pdo->exec("
             INSERT IGNORE INTO employees (id, name, nip, jabatan, wilker, photo) VALUES
-            ('emp-1', 'Petugas Contoh 1 (Silakan Edit di Panel Admin)', '199001012015031001', 'Petugas Pelayanan Dokumen Kekarantinaan', 'Kantor Induk', ''),
-            ('emp-2', 'Petugas Contoh 2', '199204152018012002', 'Epidemiolog Kesehatan / Petugas SSCEC & PHQC', 'Layanan Pelabuhan Malundung Tarakan', ''),
-            ('emp-3', 'Petugas Contoh 3', '198908202014021003', 'Petugas Pelayanan Vaksinasi & Buku ICV', 'Layanan Bandara Juwata Tarakan', ''),
+            ('emp-1', 'Petugas Contoh 1 (Silakan Edit di Panel Admin)', '199001012015031001', 'Petugas Pelayanan Dokumen Kekarantinaan', 'Layanan Pelabuhan Malundung Tarakan', ''),
+            ('emp-2', 'Petugas Contoh 2', '199204152018012002', 'Epidemiolog Kesehatan / Petugas SSCEC & PHQC', 'Wilker Tanjung Selor', ''),
+            ('emp-3', 'Petugas Contoh 3', '198908202014021003', 'Petugas Pelayanan Vaksinasi & Buku ICV', 'Wilker Berau', ''),
             ('emp-4', 'Petugas Contoh 4', '199411102019031004', 'Sanitarian / Pemeriksa Dokumen Kapal', 'Wilker Nunukan', '');
         ");
     }
 
     // Sesuaikan nama Wilayah Kerja lama pada data contoh jika sudah terlanjur dibuat
     $pdo->exec("
-        UPDATE employees SET wilker = 'Kantor Induk' WHERE wilker = 'Kantor Induk BKK Tarakan';
-        UPDATE employees SET wilker = 'Layanan Pelabuhan Malundung Tarakan' WHERE wilker = 'Wilker Pelabuhan Malundung';
-        UPDATE employees SET wilker = 'Layanan Bandara Juwata Tarakan' WHERE wilker = 'Wilker Bandara Juwata';
+        UPDATE employees SET wilker = 'Layanan Pelabuhan Malundung Tarakan' WHERE wilker IN ('Kantor Induk BKK Tarakan', 'Kantor Induk', 'Wilker Pelabuhan Malundung');
+        UPDATE employees SET wilker = 'Wilker Berau' WHERE wilker IN ('Wilker Bandara Juwata', 'Layanan Bandara Juwata Tarakan');
         UPDATE employees SET wilker = 'Pos Malinau' WHERE wilker = 'Wilker Malinau';
     ");
 

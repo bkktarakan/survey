@@ -499,68 +499,82 @@
 
     <!-- Header Ringkasan Dashboard -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-        <div>
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <!-- Judul & Badge Status -->
+        <div class="space-y-1.5">
           <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-lg sm:text-xl font-bold text-slate-800">Panel Panitia & Manajemen Data Pegawai BKK Tarakan
-            </h2>
             <span
-              class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               Admin Aktif
             </span>
             <span id="dbStatusBadge"
-              class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">
               🛢️ MySQL: Menghubungkan...
             </span>
           </div>
-          <p class="text-xs sm:text-sm text-slate-500">Input Data Pegawai (Nama, NIP, Jabatan, Wilayah Kerja, Foto) &
-            Rekapitulasi Pemenang</p>
+          <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-snug">
+            Panel Panitia &amp; Manajemen Data Pegawai BKK Tarakan
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Input Data Pegawai (Nama, NIP, Jabatan, Wilayah Kerja, Foto) &amp; Rekapitulasi Pemenang
+          </p>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="openPrintReportModal()"
-            class="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shadow-xs cursor-pointer">
-            🖨️ Cetak Berita Acara / Laporan PDF
-          </button>
-          <button onclick="openQrGeneratorModal()"
-            class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-xs cursor-pointer">
-            📱 QR Code Meja Layanan
-          </button>
-          <button onclick="exportToCSV()"
-            class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer">
-            📊 Unduh Excel (CSV)
-          </button>
-          <button onclick="openChangePasswordModal()"
-            class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer">
-            Ubah Password
-          </button>
-          <button onclick="clearAllResponses()"
-            class="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold cursor-pointer">
-            Reset Data Responden
-          </button>
-          <button onclick="handleAdminLogout()"
-            class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer">
-            Keluar (Logout)
-          </button>
+
+        <!-- Kelompok Tombol Aksi Panitia (Rapi & Sejajar) -->
+        <div class="flex flex-col sm:items-end gap-2 shrink-0">
+          <div class="flex flex-wrap sm:justify-end gap-2">
+            <button onclick="openPrintReportModal()"
+              class="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5">
+              <span>🖨️</span> Cetak Berita Acara / Laporan PDF
+            </button>
+            <button onclick="openQrGeneratorModal()"
+              class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5">
+              <span>📱</span> QR Code Meja Layanan
+            </button>
+            <button onclick="exportToCSV()"
+              class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5">
+              <span>📊</span> Unduh Excel (CSV)
+            </button>
+          </div>
+          <div class="flex flex-wrap sm:justify-end gap-2">
+            <button onclick="openChangePasswordModal()"
+              class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition cursor-pointer">
+              🔑 Ubah Password
+            </button>
+            <button onclick="clearAllResponses()"
+              class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold transition cursor-pointer">
+              🗑️ Reset Data Responden
+            </button>
+            <button onclick="handleAdminLogout()"
+              class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition cursor-pointer">
+              Keluar (Logout)
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 4 Kartu Metrik Utama -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5">
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <p class="text-xs text-slate-500">Total Responden</p>
-          <p id="statTotalRespondents" class="text-2xl font-bold text-slate-800 mt-1">0</p>
+      <!-- 4 Kartu Metrik Utama (Tinggi Seragam & Proporsional) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+        <div class="bg-slate-50/90 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+          <p class="text-xs font-medium text-slate-500">Total Responden</p>
+          <p id="statTotalRespondents" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1.5 leading-none">0</p>
+          <p class="text-[11px] text-slate-400 mt-2">Suara penilaian masuk</p>
         </div>
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <p class="text-xs text-slate-500">Jumlah Pegawai & Wilker</p>
-          <p id="statTotalOfficers" class="text-2xl font-bold text-teal-700 mt-1">0</p>
+        <div class="bg-slate-50/90 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+          <p class="text-xs font-medium text-slate-500">Jumlah Pegawai &amp; Wilker</p>
+          <p id="statTotalOfficers" class="text-2xl sm:text-3xl font-extrabold text-teal-700 mt-1.5 leading-none">0 Pegawai</p>
+          <p id="statTotalWilkersSub" class="text-[11px] font-medium text-teal-600 mt-2">Tersebar di 7 Wilayah Kerja</p>
         </div>
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <p class="text-xs text-slate-500">Indeks Kepuasan BKK</p>
-          <p id="statAvgSatisfaction" class="text-2xl font-bold text-amber-500 mt-1">0.0 ★</p>
+        <div class="bg-slate-50/90 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+          <p class="text-xs font-medium text-slate-500">Indeks Kepuasan BKK</p>
+          <p id="statAvgSatisfaction" class="text-2xl sm:text-3xl font-extrabold text-amber-500 mt-1.5 leading-none">0.0 ★</p>
+          <p class="text-[11px] text-slate-400 mt-2">Rata-rata skala 1.00 – 5.00</p>
         </div>
-        <div class="bg-teal-50 p-4 rounded-xl border border-teal-100">
-          <p class="text-xs text-teal-700 font-medium">Kandidat Peringkat #1</p>
-          <p id="statTopOfficer" class="text-sm font-bold text-teal-900 mt-1 truncate">-</p>
+        <div class="bg-teal-50/80 p-4 rounded-xl border border-teal-200 flex flex-col justify-between">
+          <p class="text-xs font-semibold text-teal-700">🏆 Kandidat Peringkat #1</p>
+          <p id="statTopOfficer" class="text-base sm:text-lg font-extrabold text-teal-950 mt-1 leading-snug break-words">-</p>
+          <p id="statTopOfficerSub" class="text-[11px] font-medium text-teal-700 mt-1.5 leading-tight">Belum ada suara masuk</p>
         </div>
       </div>
     </div>
@@ -2442,7 +2456,11 @@
       const responses = getResponses();
 
       document.getElementById('statTotalRespondents').textContent = responses.length;
-      document.getElementById('statTotalOfficers').textContent = `${employees.length} Pegawai (${wilkers.length} Wilker)`;
+      document.getElementById('statTotalOfficers').textContent = `${employees.length} Pegawai`;
+      const wilkerSubEl = document.getElementById('statTotalWilkersSub');
+      if (wilkerSubEl) {
+        wilkerSubEl.textContent = `Tersebar di ${wilkers.length} Wilayah Kerja`;
+      }
 
       if (responses.length > 0) {
         const avgSat = responses.reduce((acc, r) => acc + r.overallSatisfaction, 0) / responses.length;
@@ -2480,8 +2498,14 @@
       const allLeaderboard = calculateFullLeaderboard();
       const topCandidate = allLeaderboard.find(x => x.evalCount > 0);
       document.getElementById('statTopOfficer').textContent = topCandidate
-        ? `${topCandidate.name} (${topCandidate.wilker})`
+        ? topCandidate.name
         : '-';
+      const topOfficerSubEl = document.getElementById('statTopOfficerSub');
+      if (topOfficerSubEl) {
+        topOfficerSubEl.textContent = topCandidate
+          ? `${topCandidate.wilker} • Skor: ${topCandidate.finalScore.toFixed(1)} (${topCandidate.evalCount} suara)`
+          : 'Belum ada suara masuk';
+      }
 
       const wilkerChampContainer = document.getElementById('wilkerChampionsContainer');
       if (wilkerChampContainer) {

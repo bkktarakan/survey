@@ -781,7 +781,26 @@
 
     <!-- Tabel Riwayat Masukan & Alasan Memilih -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h3 class="text-base font-bold text-slate-800 mb-4">Daftar Suara Masuk, Alasan Pemilihan & Saran 2027</h3>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Daftar Suara Masuk, Alasan Pemilihan &amp; Saran 2027</h3>
+          <p class="text-xs text-slate-500">Filter dan cetak laporan PDF rincian suara responden, alasan memilih, serta saran perbaikan</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="responsesFilterWilker" onchange="handleResponsesFilterChange()"
+            class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-medium bg-white outline-none cursor-pointer">
+            <option value="ALL">Semua Wilayah Kerja</option>
+          </select>
+          <select id="responsesFilterOfficer" onchange="renderAdminDashboard()"
+            class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-medium bg-white outline-none cursor-pointer">
+            <option value="ALL">Semua Pegawai</option>
+          </select>
+          <button type="button" onclick="printResponsesPdfReport()"
+            class="px-3.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shadow-2xs transition cursor-pointer flex items-center gap-1.5">
+            🖨️ Cetak PDF Daftar Suara
+          </button>
+        </div>
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs sm:text-sm">
           <thead>
@@ -1439,12 +1458,14 @@
       const empWilkerSelect = document.getElementById('empWilkerInput');
       const adminFilter = document.getElementById('adminFilterWilker');
       const lbFilter = document.getElementById('leaderboardFilterWilker');
+      const respWilkerFilter = document.getElementById('responsesFilterWilker');
       const qrFilter = document.getElementById('qrSelectWilker');
 
       const prevB = selectWilkerB ? selectWilkerB.value : '';
       const prevEmpWilker = empWilkerSelect ? empWilkerSelect.value : '';
       const prevAdmin = adminFilter ? adminFilter.value : 'ALL';
       const prevLb = lbFilter ? lbFilter.value : 'ALL';
+      const prevRespW = respWilkerFilter ? respWilkerFilter.value : 'ALL';
 
       const optionsHtml = wilkers.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join('');
 
@@ -1455,6 +1476,9 @@
       adminFilter.innerHTML = `<option value="ALL">Semua Wilayah Kerja (${wilkers.length})</option>` + optionsHtml;
       if (lbFilter) {
         lbFilter.innerHTML = `<option value="ALL">Semua Wilayah Kerja</option>` + optionsHtml;
+      }
+      if (respWilkerFilter) {
+        respWilkerFilter.innerHTML = `<option value="ALL">Semua Wilayah Kerja</option>` + optionsHtml;
       }
       if (qrFilter) {
         qrFilter.innerHTML = `<option value="">Semua Wilayah Kerja (Umum)</option>` + optionsHtml;
@@ -1473,6 +1497,59 @@
       if (lbFilter && (prevLb === 'ALL' || wilkers.includes(prevLb))) {
         lbFilter.value = prevLb;
       }
+      if (respWilkerFilter && (prevRespW === 'ALL' || wilkers.includes(prevRespW))) {
+        respWilkerFilter.value = prevRespW;
+      }
+      populateResponsesOfficerFilter();
+    }
+
+    function populateResponsesOfficerFilter() {
+      const officerSelect = document.getElementById('responsesFilterOfficer');
+      if (!officerSelect) return;
+      const selectedWilker = document.getElementById('responsesFilterWilker')?.value || 'ALL';
+      const prevOfficer = officerSelect.value || 'ALL';
+
+      const employees = getEmployees();
+      const responses = getResponses();
+      const nameSet = new Set();
+
+      employees.forEach(e => {
+        if (selectedWilker === 'ALL' || e.wilker === selectedWilker) {
+          if (e.name) nameSet.add(e.name);
+        }
+      });
+      responses.forEach(r => {
+        if (selectedWilker === 'ALL' || r.evaluatedOfficerWilker === selectedWilker) {
+          if (r.evaluatedOfficerName) nameSet.add(r.evaluatedOfficerName);
+        }
+      });
+
+      const names = Array.from(nameSet).sort((a, b) => a.localeCompare(b, 'id'));
+      officerSelect.innerHTML =
+        `<option value="ALL">Semua Pegawai (${names.length})</option>` +
+        names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+
+      if (prevOfficer === 'ALL' || names.includes(prevOfficer)) {
+        officerSelect.value = prevOfficer;
+      } else {
+        officerSelect.value = 'ALL';
+      }
+    }
+
+    function handleResponsesFilterChange() {
+      populateResponsesOfficerFilter();
+      renderAdminDashboard();
+    }
+
+    function getFilteredResponsesForTable() {
+      const all = getResponses();
+      const wilkerFilter = document.getElementById('responsesFilterWilker')?.value || 'ALL';
+      const officerFilter = document.getElementById('responsesFilterOfficer')?.value || 'ALL';
+      return all.filter(r => {
+        const matchW = wilkerFilter === 'ALL' || r.evaluatedOfficerWilker === wilkerFilter;
+        const matchO = officerFilter === 'ALL' || r.evaluatedOfficerName === officerFilter;
+        return matchW && matchO;
+      });
     }
 
     function handleWilkerChangeB(selectedWilker, preserveSelection = false) {
@@ -2480,17 +2557,19 @@
         `;
       }).join('');
 
+      populateResponsesOfficerFilter();
+      const filteredResponses = getFilteredResponsesForTable();
       const tbodyResponses = document.getElementById('responsesTableBody');
-      if (responses.length === 0) {
+      if (filteredResponses.length === 0) {
         tbodyResponses.innerHTML = `
           <tr>
             <td colspan="6" class="py-8 text-center text-slate-400">
-              Belum ada data penilaian yang masuk.
+              Belum ada data penilaian yang sesuai filter.
             </td>
           </tr>
         `;
       } else {
-        tbodyResponses.innerHTML = responses.map(r => `
+        tbodyResponses.innerHTML = filteredResponses.map(r => `
           <tr class="hover:bg-slate-50 align-top">
             <td class="py-3 px-3 text-slate-500 whitespace-nowrap">${escapeHtml(r.timestamp)}</td>
             <td class="py-3 px-3">
@@ -2666,6 +2745,133 @@
       win.document.close();
     }
 
+    // ==================== CETAK LAPORAN PDF KHUSUS DAFTAR SUARA MASUK, ALASAN & SARAN 2027 ====================
+    function printResponsesPdfReport() {
+      const filtered = getFilteredResponsesForTable();
+      if (filtered.length === 0) {
+        alert('Belum ada data suara masuk untuk dicetak pada filter ini.');
+        return;
+      }
+
+      const wilkerFilter = document.getElementById('responsesFilterWilker')?.value || 'ALL';
+      const officerFilter = document.getElementById('responsesFilterOfficer')?.value || 'ALL';
+      const dateStr = new Date().toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      const avgScoreAll = (
+        filtered.reduce((acc, r) => acc + Number(r.avgScore || 0), 0) / filtered.length
+      ).toFixed(2);
+      const avgSatAll = (
+        filtered.reduce((acc, r) => acc + Number(r.overallSatisfaction || 0), 0) / filtered.length
+      ).toFixed(2);
+
+      const rowsHtml = filtered.map((r, idx) => `
+        <tr>
+          <td style="text-align:center;font-weight:bold;">${idx + 1}</td>
+          <td style="white-space:nowrap;">${escapeHtml(r.timestamp)}</td>
+          <td>
+            <strong>${escapeHtml(r.respondentName)}</strong>
+            ${r.respondentContact ? `<br><span style="font-size:9.5pt;color:#334155;">No. HP/WA: ${escapeHtml(r.respondentContact)}</span>` : ''}
+          </td>
+          <td>
+            <div>${escapeHtml((r.docTypes || []).join(', '))}</div>
+            <div style="font-size:9.5pt;color:#334155;margin-top:2px;"><strong>Intensitas:</strong> ${escapeHtml(r.intensity)}</div>
+          </td>
+          <td>
+            <strong>★ ${escapeHtml(r.evaluatedOfficerName)}</strong><br>
+            <span style="font-size:9.5pt;color:#334155;">${escapeHtml(r.evaluatedOfficerWilker)}</span><br>
+            <span style="font-size:9.5pt;color:#0f766e;font-weight:bold;">Rata-rata: ${r.avgScore} / 5</span>
+          </td>
+          <td>
+            <div style="font-style:italic;">"${escapeHtml(r.voteReason)}"</div>
+            ${r.suggestion2027 ? `<div style="margin-top:4px;font-size:9.5pt;color:#1e293b;"><strong>Saran 2027:</strong> ${escapeHtml(r.suggestion2027)}</div>` : ''}
+          </td>
+          <td style="text-align:center;font-weight:bold;color:#b45309;">${r.overallSatisfaction} ★</td>
+        </tr>
+      `).join('');
+
+      const filterSubtitle = [
+        wilkerFilter !== 'ALL' ? `Wilayah Kerja: ${wilkerFilter}` : 'Semua Wilayah Kerja',
+        officerFilter !== 'ALL' ? `Pegawai: ${officerFilter}` : 'Semua Pegawai'
+      ].join(' • ');
+
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Laporan Daftar Suara Masuk, Alasan Pemilihan & Saran 2027 - BKK Tarakan</title>
+          <style>
+            @page { size: A4 landscape; margin: 14mm; }
+            body { font-family: "Times New Roman", Times, serif; color: #000; line-height: 1.4; font-size: 10.5pt; }
+            .kop { border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 14px; text-align: center; }
+            .kop h1 { font-size: 13pt; margin: 0; font-weight: bold; text-transform: uppercase; }
+            .kop h2 { font-size: 14pt; margin: 2px 0; font-weight: bold; text-transform: uppercase; }
+            .kop p { font-size: 9.5pt; margin: 2px 0; }
+            .title-box { text-align: center; margin-bottom: 12px; }
+            .title-box h3 { font-size: 12.5pt; margin: 0; text-decoration: underline; text-transform: uppercase; }
+            .title-box p { font-size: 10pt; margin: 3px 0 0; }
+            .meta-box { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 10pt; }
+            table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 10pt; }
+            th, td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; }
+            th { background-color: #f0fdfa; font-weight: bold; text-align: center; }
+            .sig-grid { width: 100%; margin-top: 24px; display: table; page-break-inside: avoid; }
+            .sig-col { display: table-cell; width: 50%; text-align: center; vertical-align: top; }
+            .no-print { background: #0f766e; color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-radius: 8px; font-family: sans-serif; }
+            .no-print button { background: #fff; color: #0f766e; border: none; padding: 7px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+            @media print { .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <span style="font-size:13px;font-weight:bold;">Laporan Daftar Suara Masuk, Alasan Pemilihan &amp; Saran 2027 (${filtered.length} Responden)</span>
+            <button onclick="window.print()">🖨️ Cetak / Simpan sebagai PDF</button>
+          </div>
+          <div class="kop">
+            <h1>KEMENTERIAN KESEHATAN REPUBLIK INDONESIA</h1>
+            <h1>DIREKTORAT JENDERAL PENANGGULANGAN PENYAKIT</h1>
+            <h2>BALAI KEKARANTINAAN KESEHATAN KELAS I TARAKAN</h2>
+            <p>Jl. Kusuma Bangsa, Tarakan, Kalimantan Utara • Melayani Sepenuh Hati</p>
+          </div>
+
+          <div class="title-box">
+            <h3>LAPORAN DAFTAR SUARA MASUK, ALASAN PEMILIHAN &amp; SARAN PERBAIKAN TAHUN 2027</h3>
+            <p>${escapeHtml(filterSubtitle)}</p>
+          </div>
+
+          <div class="meta-box">
+            <div><strong>Total Suara Masuk:</strong> ${filtered.length} Responden</div>
+            <div><strong>Rata-rata Skor Penilaian Petugas:</strong> ${avgScoreAll} / 5.00</div>
+            <div><strong>Rata-rata Kepuasan BKK Tarakan:</strong> ${avgSatAll} / 5.00 ★</div>
+            <div><strong>Tanggal Cetak:</strong> Tarakan, ${escapeHtml(dateStr)}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px;">No</th>
+                <th style="width:110px;">Waktu</th>
+                <th style="width:155px;">Responden / Instansi</th>
+                <th style="width:140px;">Dokumen &amp; Intensitas</th>
+                <th style="width:155px;">Pegawai Dinilai &amp; Dipilih</th>
+                <th>Alasan Utama &amp; Saran 2027</th>
+                <th style="width:65px;">Puas BKK</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
     // ==================== CETAK BERITA ACARA & LAPORAN PDF RESMI ====================
     function openPrintReportModal() {
       document.getElementById('printReportModal').classList.remove('hidden');
@@ -2727,6 +2933,30 @@
           </tr>
         `;
       }).join('');
+
+      const responseDetailRowsHtml = responses.map((r, i) => `
+        <tr>
+          <td style="text-align:center;">${i + 1}</td>
+          <td style="white-space:nowrap;">${escapeHtml(r.timestamp)}</td>
+          <td>
+            <strong>${escapeHtml(r.respondentName)}</strong>
+            ${r.respondentContact ? `<br><small>HP/WA: ${escapeHtml(r.respondentContact)}</small>` : ''}
+          </td>
+          <td>
+            ${escapeHtml((r.docTypes || []).join(', '))}<br>
+            <small>Intensitas: ${escapeHtml(r.intensity)}</small>
+          </td>
+          <td>
+            <strong>★ ${escapeHtml(r.evaluatedOfficerName)}</strong><br>
+            <small>${escapeHtml(r.evaluatedOfficerWilker)} (Rata-rata: ${r.avgScore}/5)</small>
+          </td>
+          <td>
+            <em>"${escapeHtml(r.voteReason)}"</em>
+            ${r.suggestion2027 ? `<br><small><strong>Saran 2027:</strong> ${escapeHtml(r.suggestion2027)}</small>` : ''}
+          </td>
+          <td style="text-align:center;font-weight:bold;">${r.overallSatisfaction} ★</td>
+        </tr>
+      `).join('');
 
       const win = window.open('', '_blank');
       win.document.write(`
@@ -2819,6 +3049,24 @@
             </thead>
             <tbody>
               ${wilkerWinnerRowsHtml}
+            </tbody>
+          </table>
+
+          <div class="section-heading">IV. DAFTAR SUARA MASUK, ALASAN PEMILIHAN &amp; SARAN PERBAIKAN 2027</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px;">No</th>
+                <th style="width:95px;">Waktu</th>
+                <th style="width:130px;">Responden / Instansi</th>
+                <th style="width:120px;">Dokumen &amp; Intensitas</th>
+                <th style="width:135px;">Pegawai Dinilai &amp; Dipilih</th>
+                <th>Alasan Utama &amp; Saran 2027</th>
+                <th style="width:55px;">Puas BKK</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${responseDetailRowsHtml || '<tr><td colspan="7" style="text-align:center;">Belum ada data suara masuk</td></tr>'}
             </tbody>
           </table>
 
